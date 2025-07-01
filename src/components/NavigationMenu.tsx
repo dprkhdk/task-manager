@@ -106,15 +106,36 @@ function NavigationMenu() {
         {!isMobile && (
           <>
             <Divider sx={{ width: "100%", mb: 1 }} />
-            <Typography
-              component="a"
-              target="_blank"
-              variant="body2"
-              color="text.secondary"
-              sx={{ width: "100%", textAlign: "center" }}
-            >
-              Created by: Denys Prykhodko
-            </Typography>
+            <Box>
+              <Typography
+                variant="body2"
+                component="span"
+                color="text.secondary"
+              >
+                Created by:
+              </Typography>
+              <Typography
+                href="https://denys-prykhodko.netlify.app/"
+                component="a"
+                target="_blank"
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  width: "100%",
+                  textAlign: "center",
+                  ml: 0.5,
+                  textDecoration: "none",
+                  color: "primary.contrastText",
+                  "&:hover": {
+                    textDecoration: "underline",
+                    color: "primary.main",
+                  },
+                  transition: "color 0.2s, text-decoration 0.2s",
+                }}
+              >
+                Denys Prykhodko
+              </Typography>
+            </Box>
           </>
         )}
         {/* {isMobile && (
