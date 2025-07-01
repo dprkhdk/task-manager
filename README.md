@@ -19,3 +19,5 @@ A simple, responsive task manager built with **React** and **Material UI (MUI)**
 - TypeScript
 - Material UI (v5)
 - Custom Styled Components
+
+P.S. still working on it 😅
