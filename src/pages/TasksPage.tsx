@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import Box from "@mui/material/Box";
 import Task from "../components/Task";
 import type { TaskProps } from "../types/types";
@@ -8,6 +7,7 @@ import MenuItem from "@mui/material/MenuItem";
 import type { SelectChangeEvent } from "@mui/material";
 import Button from "@mui/material/Button";
 import CustomizedSwitches from "../components/CustomizedSwitches";
+import CreateTaskModal from "../components/CreateTaskModal";
 
 const tasks: TaskProps[] = [
   {
@@ -77,6 +77,14 @@ function TasksPage() {
   const [filter, setFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [onlyToday, setOnlyToday] = useState(false);
+  const [openCreateTaskModal, setOpenCreateTaskModal] = useState(false);
+
+  const handleOpenCreateTaskModal = () => {
+    setOpenCreateTaskModal(true);
+  };
+  const handleCloseCreateTaskModal = () => {
+    setOpenCreateTaskModal(false);
+  };
 
   const handleToggleToday = () => {
     setOnlyToday((prev) => !prev);
@@ -111,6 +119,10 @@ function TasksPage() {
         px: 2,
       }}
     >
+      <CreateTaskModal
+        open={openCreateTaskModal}
+        onClose={handleCloseCreateTaskModal}
+      />
       <Box
         sx={{
           display: "flex",
@@ -183,7 +195,7 @@ function TasksPage() {
             />
             <Button
               variant="contained"
-              onClick={() => console.log("Create Task clicked")}
+              onClick={handleOpenCreateTaskModal}
               sx={{
                 height: "56px",
                 backgroundColor: "primary.contrastText",

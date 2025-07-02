@@ -1,5 +1,5 @@
 import { createTheme } from "@mui/material/styles";
-
+import "@mui/x-date-pickers/themeAugmentation";
 const theme = createTheme({
   palette: {
     primary: {
@@ -63,6 +63,19 @@ const theme = createTheme({
         body: {
           backgroundColor: "#f0f0f0",
           overflowY: "auto",
+        },
+      },
+    },
+    MuiPickersDay: {
+      styleOverrides: {
+        root: {
+          "&.Mui-selected": {
+            backgroundColor: "#7ab9da",
+            color: "#ffffff",
+            "&:hover": {
+              backgroundColor: "#456bb2",
+            },
+          },
         },
       },
     },
