@@ -1,6 +1,7 @@
 import { Box, Divider, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import type { TaskProps } from "../types/types";
+import { Link } from "react-router-dom";
 
 function Task({
   id,
@@ -10,7 +11,6 @@ function Task({
   priority,
   status,
   createdDate,
-  tags,
 }: TaskProps) {
   const theme = useTheme();
 
@@ -29,74 +29,84 @@ function Task({
   };
 
   return (
-    <Box
-      key={id}
-      sx={{
-        backgroundColor: theme.palette.background.paper,
-        borderRadius: 2,
-        boxShadow: 2,
-        p: 3,
-        mb: 2,
-        borderLeft: `6px solid ${
-          {
-            High: theme.palette.error.main,
-            Medium: theme.palette.warning.main,
-            Low: theme.palette.info.main,
-          }[priority] || theme.palette.success.main
-        }`,
-      }}
+    <Link
+      to={`/tasks/${id}`}
+      style={{ textDecoration: "none", color: "inherit" }}
     >
-      <Typography variant="h2" color="primary.main" gutterBottom>
-        {name}
-      </Typography>
-      <Typography variant="body1" color="text.main" gutterBottom>
-        {description}
-      </Typography>
-      <Divider sx={{ my: 2 }} />
-      <Typography variant="body2" color="text.secondary">
-        Created: {formatDate(createdDate)}
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        Due: {formatDate(dueDate)}
-      </Typography>
-      <Typography
-        variant="body2"
+      <Box
+        key={id}
         sx={{
-          color:
-            status === "done"
-              ? theme.palette.success?.main || "#4caf50" //green
-              : status === "in-progress"
-              ? theme.palette.warning?.main || "#ff9800" //orange
-              : status === "not-started"
-              ? theme.palette.info?.main || "#2196f3" //blue
-              : theme.palette.error.main,
-          fontWeight: 600,
+          backgroundColor: theme.palette.background.paper,
+          borderRadius: 2,
+          boxShadow: 2,
+          p: 3,
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          borderLeft: `6px solid ${
+            {
+              High: theme.palette.error.main,
+              Medium: theme.palette.warning.main,
+              Low: theme.palette.info.main,
+            }[priority] || theme.palette.success.main
+          }`,
+          transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+          "&:hover": {
+            transform: "translateY(-4px)",
+            boxShadow: 6,
+          },
         }}
       >
-        Status: {formatStatus(status)}
-      </Typography>
-      <Divider sx={{ my: 2 }} />
-      {tags?.map((tag, index) => (
-        <Box
-          key={index}
+        <Typography
+          variant="h6"
+          component="h2"
+          color="primary.main"
+          gutterBottom
+        >
+          {name}
+        </Typography>
+        <Typography
+          variant="body2"
+          color="text.main"
+          gutterBottom
           sx={{
-            display: "inline-block",
-            backgroundColor: theme.palette.background.default,
-            color: theme.palette.common.black,
-            borderRadius: 1,
-            px: 1,
-            py: 0.5,
-            border: `1px solid ${theme.palette.divider}`,
-            fontSize: "0.875rem",
-            fontWeight: 500,
-            mr: 1,
-            mb: 1,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: "2",
+            WebkitBoxOrient: "vertical",
+            flexGrow: 1,
           }}
         >
-          {tag}
+          {description || "No description"}
+        </Typography>
+        <Divider sx={{ my: 2 }} />
+        <Box>
+          <Typography variant="caption" color="text.secondary">
+            Created: {formatDate(createdDate)}
+          </Typography>
+          <br />
+          <Typography variant="caption" color="text.secondary">
+            Due: {formatDate(dueDate)}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color:
+                status === "done"
+                  ? theme.palette.success?.main
+                  : status === "in-progress"
+                  ? theme.palette.warning?.main
+                  : theme.palette.info?.main,
+              fontWeight: 600,
+              mt: 1,
+            }}
+          >
+            {formatStatus(status)}
+          </Typography>
         </Box>
-      ))}
-    </Box>
+      </Box>
+    </Link>
   );
 }
 export default Task;

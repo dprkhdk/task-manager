@@ -6,14 +6,17 @@ import {
   MenuItem,
   Button,
   Autocomplete,
+  Alert,
+  Snackbar,
 } from "@mui/material";
-
 import { useState } from "react";
 import type { TaskProps } from "../types/types";
 import CloseIcon from "@mui/icons-material/Close";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
+
+import { createTask } from "../api/task";
 
 const style = {
   position: "absolute" as const,
@@ -38,14 +41,32 @@ const initialFormState: Omit<TaskProps, "id" | "createdDate"> = {
   tags: [],
 };
 
+interface CreateTaskModalProps {
+  open: boolean;
+  onClose: () => void;
+  onTaskCreated: () => void;
+}
+
 function CreateTaskModal({
   open,
   onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+  onTaskCreated,
+}: CreateTaskModalProps) {
   const [form, setForm] = useState(initialFormState);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [alert, setAlert] = useState<null | {
+    type: "success" | "error";
+    message: string;
+  }>(null);
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    if (!form.name.trim()) newErrors.name = "Task name is required";
+    if (!form.projectId) newErrors.projectId = "Project is required";
+    if (!form.dueDate) newErrors.dueDate = "Due date is required";
+    if (!form.priority) newErrors.priority = "Priority is required";
+    return newErrors;
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -54,158 +75,209 @@ function CreateTaskModal({
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newTask: TaskProps = {
-      ...form,
-      id: Date.now().toString(),
-      createdDate: new Date(),
-    };
-    console.log("New Task:", newTask);
-    onClose();
+  const handleModalClose = () => {
     setForm(initialFormState);
+    setErrors({});
+    onClose();
+  };
+
+  const handleAlertClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setAlert(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAlert(null);
+    const validationErrors = validateForm();
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length > 0) {
+      return;
+    }
+
+    try {
+      await createTask(form);
+      onTaskCreated();
+      handleModalClose();
+      setAlert({ type: "success", message: "Task successfully created!" });
+    } catch (error) {
+      console.error("Failed to create task:", error);
+      setAlert({ type: "error", message: "Failed to create task." });
+    }
   };
 
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      aria-labelledby="modal-modal-title"
-      aria-describedby="modal-modal-description"
-    >
-      <Box sx={style}>
-        <Typography
-          variant="h6"
-          component="h2"
-          sx={{ color: "primary.main", mb: 2 }}
-        >
-          Create New Task
-        </Typography>
-        <Button
-          onClick={onClose}
-          sx={{
-            position: "absolute",
-            top: 10,
-            right: 1,
-            color: "text.secondary",
-          }}
-        >
-          <CloseIcon />
-        </Button>
-        <Box
-          component="form"
-          onSubmit={handleSubmit}
-          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-        >
-          <TextField
-            label="Task Name"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            required
-            fullWidth
-          />
-
-          <TextField
-            label="Project"
-            name="projectId"
-            select
-            value={form.projectId}
-            onChange={handleChange}
-            fullWidth
+    <>
+      <Snackbar
+        open={!!alert}
+        autoHideDuration={6000}
+        onClose={handleAlertClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+      >
+        {alert ? (
+          <Alert
+            onClose={handleAlertClose}
+            severity={alert.type}
+            sx={{ width: "100%" }}
+            variant="filled"
           >
-            {["Personal", "Work", "Education", "Other"].map((option) => (
-              <MenuItem key={option} value={option}>
-                {option}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          <TextField
-            label="Description"
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            multiline
-            rows={3}
-            fullWidth
-          />
-
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              label="Due Date"
-              value={dayjs(form.dueDate)}
-              onChange={(newValue) => {
-                if (newValue) {
-                  setForm((prev) => ({
-                    ...prev,
-                    dueDate: newValue.toDate(),
-                  }));
-                }
-              }}
-              format="DD MMM YYYY"
-              slotProps={{
-                textField: {
-                  fullWidth: true,
-                },
-              }}
-            />
-          </LocalizationProvider>
-
-          <TextField
-            label="Priority"
-            name="priority"
-            select
-            value={form.priority}
-            onChange={handleChange}
-            fullWidth
+            {alert.message}
+          </Alert>
+        ) : undefined}
+      </Snackbar>
+      <Modal
+        open={open}
+        onClose={handleModalClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        disableScrollLock={true}
+      >
+        <Box sx={style}>
+          <Typography
+            variant="h6"
+            component="h2"
+            sx={{ color: "primary.main", mb: 2 }}
           >
-            {["Low", "Medium", "High"].map((level) => (
-              <MenuItem key={level} value={level}>
-                {level}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          <Autocomplete
-            multiple
-            freeSolo
-            options={[]} // можно добавить популярные теги, если хочешь
-            value={form.tags ?? []}
-            onChange={(_, newValue) =>
-              setForm((prev) => ({
-                ...prev,
-                tags: newValue,
-              }))
-            }
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Tags"
-                placeholder="Add tag and press Enter"
-              />
-            )}
-          />
-
+            Create New Task
+          </Typography>
           <Button
-            onClick={handleSubmit}
-            type="submit"
-            variant="contained"
-            fullWidth
+            onClick={handleModalClose}
             sx={{
-              backgroundColor: "primary.contrastText",
-              color: "background.paper",
-              "&:hover": {
-                backgroundColor: "primary.main",
-                color: "background.paper",
-              },
+              position: "absolute",
+              top: 10,
+              right: 1,
+              color: "text.secondary",
             }}
           >
-            Create Task
+            <CloseIcon />
           </Button>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+          >
+            <TextField
+              label="Task Name"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              required
+              fullWidth
+              error={!!errors.name}
+              helperText={errors.name}
+            />
+
+            <TextField
+              label="Project"
+              name="projectId"
+              select
+              value={form.projectId}
+              onChange={handleChange}
+              fullWidth
+            >
+              {["Personal", "Work", "Education", "Other"].map((option) => (
+                <MenuItem key={option} value={option}>
+                  {option}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              label="Description"
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              multiline
+              rows={3}
+              fullWidth
+            />
+
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+                label="Due Date"
+                value={dayjs(form.dueDate)}
+                onChange={(newValue) => {
+                  if (newValue) {
+                    setForm((prev) => ({
+                      ...prev,
+                      dueDate: newValue.toDate(),
+                    }));
+                  }
+                }}
+                format="DD MMM YYYY"
+                slotProps={{
+                  popper: {
+                    disablePortal: true,
+                  },
+                  textField: {
+                    fullWidth: true,
+                    error: !!errors.dueDate,
+                    helperText: errors.dueDate,
+                  },
+                }}
+              />
+            </LocalizationProvider>
+
+            <TextField
+              label="Priority"
+              name="priority"
+              select
+              value={form.priority}
+              onChange={handleChange}
+              fullWidth
+            >
+              {["Low", "Medium", "High"].map((level) => (
+                <MenuItem key={level} value={level}>
+                  {level}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <Autocomplete
+              multiple
+              freeSolo
+              options={[]}
+              value={form.tags ?? []}
+              onChange={(_, newValue) =>
+                setForm((prev) => ({
+                  ...prev,
+                  tags: newValue,
+                }))
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Tags"
+                  placeholder="Add tag and press Enter"
+                />
+              )}
+            />
+
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              sx={{
+                backgroundColor: "primary.contrastText",
+                color: "background.paper",
+                "&:hover": {
+                  backgroundColor: "primary.main",
+                  color: "background.paper",
+                },
+              }}
+            >
+              Create Task
+            </Button>
+          </Box>
         </Box>
-      </Box>
-    </Modal>
+      </Modal>
+    </>
   );
 }
 

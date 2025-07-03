@@ -6,6 +6,7 @@ import ProfilePage from "./pages/ProfilePage";
 import ProjectsPage from "./pages/ProjectsPage";
 import TasksPage from "./pages/TasksPage";
 import DashboardPage from "./pages/DashboardPage";
+import SingleTaskPage from "./pages/SingleTaskPage";
 
 function App() {
   const theme = useTheme();
@@ -34,6 +35,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/tasks" element={<TasksPage />} />
+            <Route path="/tasks/:taskId" element={<SingleTaskPage />} />
             <Route path="/projects" element={<ProjectsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Routes>
