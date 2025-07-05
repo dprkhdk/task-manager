@@ -1,4 +1,4 @@
-import { Box, Divider, Typography } from "@mui/material";
+import { Box, Divider, Typography, Chip } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import type { TaskProps } from "../types/types";
 import { Link } from "react-router-dom";
@@ -11,6 +11,7 @@ function Task({
   priority,
   status,
   createdDate,
+  tags,
 }: TaskProps) {
   const theme = useTheme();
 
@@ -42,6 +43,7 @@ function Task({
           p: 3,
           height: "100%",
           display: "flex",
+          maxWidth: 500,
           flexDirection: "column",
           borderLeft: `6px solid ${
             {
@@ -104,6 +106,12 @@ function Task({
           >
             {formatStatus(status)}
           </Typography>
+          <Divider sx={{ my: 2 }} />
+          <Box sx={{ display: "flex", flexWrap: "wrap" }}>
+            {tags?.map((tag) => (
+              <Chip key={tag} label={tag} />
+            ))}
+          </Box>
         </Box>
       </Box>
     </Link>

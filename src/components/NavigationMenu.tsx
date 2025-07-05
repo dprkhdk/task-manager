@@ -138,22 +138,6 @@ function NavigationMenu() {
             </Box>
           </>
         )}
-        {/* {isMobile && (
-          <>
-            <Box sx={{ width: "100%", textAlign: "center", mb: 6 }}>
-              <Divider sx={{ width: "100%", mb: 1 }} />
-              <a href="https://denys-prykhodko.netlify.app/" target="_blank">
-                <OpenInNewIcon
-                  sx={{
-                    width: "100%",
-
-                    color: "text.secondary",
-                  }}
-                />
-              </a>
-            </Box>
-          </>
-        )} */}
       </Toolbar>
     </AppBar>
   );
